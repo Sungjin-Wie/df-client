@@ -1,4 +1,14 @@
+import React from 'react';
+import { CardImage } from '@material-ui/core';
 const key = 'http://df-server.herokuapp.com/api';
+// const key = 'http://localhost:3000/api';
+
+export const CharacterImage = (server, character) => (
+  <img
+    src={`https://img-api.neople.co.kr/df/servers/${server}/characters/${character}?zoom=2`}
+    alt=''
+  />
+);
 
 export const serverList = [
   { eng: 'all', kor: '전체' },

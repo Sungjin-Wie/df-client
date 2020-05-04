@@ -1,14 +1,6 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
 
-const useStyles = makeStyles({
-  wrapper: {
-    display: 'flex',
-    justifyContent: 'center',
-  },
-});
-
-const CenterWrapper = (BaseComponent) => (props) => {
+const CenterWrapper = (BaseComponent) => () => {
   return (
     <>
       <div
@@ -17,9 +9,8 @@ const CenterWrapper = (BaseComponent) => (props) => {
           justifyContent: 'center',
         }}
       >
-        <BaseComponent {...props} />
+        <BaseComponent />
       </div>
-      <div style={{ clear: 'both' }}></div>
     </>
   );
 };
