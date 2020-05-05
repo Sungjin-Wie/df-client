@@ -4,12 +4,17 @@ export const Context = createContext();
 
 export const initialState = {
   home: {
-    value: '',
     server: 'all',
+    name: '',
   },
   search: {
     isLoaded: false,
     data: [],
+    page: 1,
+    pageSize: 9,
+  },
+  info: {
+    isLoaded: false,
   },
 };
 
@@ -24,9 +29,13 @@ export const reducer = (state, action) => {
         ...state,
         [action.type]: { ...state[action.type], [action.state]: action.value },
       };
-      console.log(newState);
       return newState;
+    case 'info':
+      return {
+        ...state,
+        [action.type]: { ...state[action.type], ...action.value },
+      };
     default:
-      return new Error(`Error: action [ ${action.type} ]`);
+      return new Error(`Error: action [ ${action.type}${action.state} ]`);
   }
 };

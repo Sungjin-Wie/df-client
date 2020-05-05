@@ -28,7 +28,7 @@ const App = () => {
         <Router>
           <Switch>
             <Route exact path='/' component={Home} />
-            <Route path='/searchresult/:server/:id' component={Search} />
+            <Route path='/searchresult/:server/:name' component={Search} />
             <Route path='/auction' component={Auction} />
             <Route path='/info/:server/:id' component={Info} />
             <Route component={NotFound} />

@@ -1,16 +1,23 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { key, Context } from 'lib';
+import { key, Context, ShowJSON } from 'lib';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, CardContent } from '@material-ui/core';
+import { Card, CardContent, Grid } from '@material-ui/core';
+import { Pagination } from '@material-ui/lab';
 import { CharacterImage } from 'lib/util/key';
+import { useParams } from 'react-router-dom';
 
 const useStyles = makeStyles({
-  wrapper: {},
+  wrapper: {
+    textAlign: 'center',
+  },
   card: {
     marginTop: 50,
+    margin: 20,
     width: 300,
     textAlign: 'center',
+    float: 'left',
+    display: 'inline-block',
   },
   image: {
     display: 'inline-block',
@@ -28,40 +35,48 @@ const useStyles = makeStyles({
   pos: {
     marginBottom: 12,
   },
+  pageNationWrapper: {
+    marginTop: 20,
+  },
 });
 
 const Search = () => {
   const { store, dispatch } = useContext(Context);
-  const { server, value } = store.home;
-  const { isLoaded, data } = store.search;
+  const { server, name } = useParams();
+  const { isLoaded, data, page, pageSize } = store.search;
   const css = useStyles();
-  useEffect(() => {
-    const fetch = async () => {
-      let url = key + `/search?server=${server}&name=${value}`;
-      let res = await axios.get(url);
-      console.log(res.data.rows);
+
+  const pageNationChange = (event, value) => {
+    dispatch({
+      type: 'search',
+      state: 'page',
+      value: value,
+    });
+  };
+
+  const handleClick = (c) => {
+    let path = `#/info/${c.serverId}/${c.characterId}`;
+    const infoFetch = async () => {
       dispatch({
-        type: 'search',
+        type: 'info',
+        state: 'isLoaded',
+        value: false,
+      });
+      let url = key + `/info?server=${c.serverId}&id=${c.characterId}`;
+      let res = await axios.get(url);
+      console.log(res);
+      dispatch({
+        type: 'info',
         state: 'data',
-        value: res.data.rows,
+        value: res.data,
       });
       dispatch({
-        type: 'search',
+        type: 'info',
         state: 'isLoaded',
         value: true,
       });
     };
-    fetch();
-  }, []);
-
-  useEffect(() => {
-    // if (store.home.data.length !== 0) {
-    //   toggleLoaded(true);
-    // }
-  }, [store]);
-
-  const handleClick = (c) => {
-    let path = `#/info/${c.serverId}/${c.characterId}`;
+    infoFetch();
     window.location.assign(path);
   };
 
@@ -72,26 +87,38 @@ const Search = () => {
       ) : isLoaded && data.length === 0 ? (
         <div>검색 결과가 없습니다.</div>
       ) : (
-        data.map((c) => {
-          return (
-            <Card
-              onClick={() => handleClick(c)}
-              className={css.card}
-              variant='outlined'
-              key={c.characterId}
-            >
-              <CardContent className={css.image}>
-                {CharacterImage(c.serverId, c.characterId)}
-              </CardContent>
-              <CardContent>{c.characterName}</CardContent>
-              <CardContent>{c.jobGrowName}</CardContent>
-              <CardContent>
-                {c.serverId} {c.characterId}
-              </CardContent>
-            </Card>
-          );
-        })
+        data
+          .map((c) => {
+            return (
+              <Card
+                onClick={() => handleClick(c)}
+                className={css.card}
+                variant='outlined'
+                key={c.characterId}
+              >
+                <CardContent className={css.image}>
+                  {CharacterImage(c.serverId, c.characterId)}
+                </CardContent>
+                <CardContent>{c.characterName}</CardContent>
+                <CardContent>{c.jobGrowName}</CardContent>
+              </Card>
+            );
+          })
+          .slice((page - 1) * pageSize, page * pageSize)
       )}
+      <div className={css.pageNationWrapper}>
+        <Grid container justify='center'>
+          <Pagination
+            count={Math.ceil(data.length / pageSize)}
+            page={page}
+            onChange={pageNationChange}
+            variant='outlined'
+            shape='rounded'
+            showFirstButton
+            showLastButton
+          />
+        </Grid>
+      </div>
     </div>
   );
 };

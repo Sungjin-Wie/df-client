@@ -8,8 +8,9 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { serverList, Context, useDebounce } from 'lib';
+import { serverList, Context, useDebounce, key } from 'lib';
 import { useHistory } from 'react-router-dom';
+import axios from 'axios';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -27,15 +28,58 @@ const useStyles = makeStyles((theme) => ({
 
 const Home = () => {
   const { store, dispatch } = useContext(Context);
-  const [value, setValue] = useState('');
-  const { server } = store.home;
+  const { server, name } = store.home;
   const css = useStyles();
   const history = useHistory();
+
+  const [value, setValue] = useState('');
   const debouncedValue = useDebounce(value, 200);
+  useEffect(() => {
+    dispatch({
+      type: 'home',
+      state: 'name',
+      value: debouncedValue,
+    });
+  }, [debouncedValue]);
 
   const handleEnterKey = (target) => {
     if (target.charCode === 13) {
-      history.push(`searchresult/`);
+      const fetch = async () => {
+        dispatch({
+          type: 'search',
+          state: 'isLoaded',
+          value: false,
+        });
+        dispatch({
+          type: 'home',
+          state: 'name',
+          value: value,
+        });
+        console.log('fetch started');
+        let url = key + `/search?server=${server}&name=${value}`;
+        let res = await axios.get(url);
+        console.log(res);
+        if (res.data.rows) {
+          dispatch({
+            type: 'search',
+            state: 'data',
+            value: res.data.rows,
+          });
+        } else {
+          dispatch({
+            type: 'search',
+            state: 'data',
+            value: [],
+          });
+        }
+        dispatch({
+          type: 'search',
+          state: 'isLoaded',
+          value: true,
+        });
+      };
+      fetch();
+      history.push(`searchresult/${server}/${value}`);
     }
   };
 
@@ -47,13 +91,31 @@ const Home = () => {
     }
   };
 
-  useEffect(() => {
-    dispatch({
-      type: 'home',
-      state: 'value',
-      value: value,
-    });
-  }, [debouncedValue]);
+  const handleClick = (e) => {
+    const fetch = async () => {
+      dispatch({
+        type: 'search',
+        state: 'isLoaded',
+        value: false,
+      });
+      console.log('fetch started');
+      let url = key + `/search?server=${server}&name=${name}`;
+      let res = await axios.get(url);
+      console.log(res.data.rows);
+      dispatch({
+        type: 'search',
+        state: 'data',
+        value: res.data.rows,
+      });
+      dispatch({
+        type: 'search',
+        state: 'isLoaded',
+        value: true,
+      });
+    };
+    fetch();
+    history.push(`searchresult/${server}/${value}`);
+  };
 
   return (
     <div className={css.container}>
@@ -96,10 +158,10 @@ const Home = () => {
         variant='contained'
         color='primary'
         href={`#/searchresult/${server}/${value}`}
+        onClick={(e) => handleClick(e)}
       >
         검색하기
       </Button>
-      <pre>{JSON.stringify(store, null, 2)}</pre>
     </div>
   );
 };

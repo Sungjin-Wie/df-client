@@ -1,27 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { key } from 'lib';
+import { key, Context } from 'lib';
 
 const Info = () => {
+  const { store, dispatch } = useContext(Context);
+  const { info } = store;
   const { server, id } = useParams();
-  const [data, setData] = useState();
 
   useEffect(() => {
-    console.log(server, id);
-    const fetch = async () => {
+    const infoFetch = async () => {
+      dispatch({
+        type: 'info',
+        state: 'isLoaded',
+        value: false,
+      });
       let url = key + `/info?server=${server}&id=${id}`;
       let res = await axios.get(url);
-      console.log(JSON.parse(res.data.status));
-      setData(JSON.parse(res.data.status));
+      console.log(res);
+      dispatch({
+        type: 'info',
+        state: 'data',
+        value: res.data,
+      });
+      dispatch({
+        type: 'info',
+        state: 'isLoaded',
+        value: true,
+      });
     };
-    fetch();
-  }, []);
+    if (!info.isLoaded) {
+      infoFetch();
+    }
+  }, [info]);
 
   return (
-    <>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-    </>
+    <div style={{ margin: 'auto' }}>
+      <pre>{JSON.stringify(store, null, 2)}</pre>
+    </div>
   );
 };
 
