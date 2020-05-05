@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { key, Loading } from 'lib';
+import React, { useState, useEffect, useContext } from 'react';
+import { key, Context } from 'lib';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
-import { Card, CardContent, CardMedia, Link } from '@material-ui/core';
+import { Card, CardContent } from '@material-ui/core';
 import { CharacterImage } from 'lib/util/key';
-import { useParams } from 'react-router-dom';
 
 const useStyles = makeStyles({
   wrapper: {},
@@ -32,25 +31,34 @@ const useStyles = makeStyles({
 });
 
 const Search = () => {
+  const { store, dispatch } = useContext(Context);
+  const { server, value } = store.home;
+  const { isLoaded, data } = store.search;
   const css = useStyles();
-  const { server, name } = useParams();
-  const [isLoaded, toggleLoaded] = useState(false);
-  const [data, setData] = useState([]);
   useEffect(() => {
     const fetch = async () => {
-      let url = key + `/search?server=${server}&name=${name}`;
+      let url = key + `/search?server=${server}&name=${value}`;
       let res = await axios.get(url);
       console.log(res.data.rows);
-      setData(res.data.rows);
+      dispatch({
+        type: 'search',
+        state: 'data',
+        value: res.data.rows,
+      });
+      dispatch({
+        type: 'search',
+        state: 'isLoaded',
+        value: true,
+      });
     };
     fetch();
   }, []);
 
   useEffect(() => {
-    if (data.length !== 0) {
-      toggleLoaded(true);
-    }
-  }, [data]);
+    // if (store.home.data.length !== 0) {
+    //   toggleLoaded(true);
+    // }
+  }, [store]);
 
   const handleClick = (c) => {
     let path = `#/info/${c.serverId}/${c.characterId}`;

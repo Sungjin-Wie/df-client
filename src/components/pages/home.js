@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import {
   Input,
   Button,
@@ -8,7 +8,7 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { serverList } from 'lib';
+import { serverList, Context, useDebounce } from 'lib';
 import { useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles((theme) => ({
@@ -26,14 +26,16 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Home = () => {
+  const { store, dispatch } = useContext(Context);
+  const [value, setValue] = useState('');
+  const { server } = store.home;
   const css = useStyles();
   const history = useHistory();
-  const [name, setName] = useState('');
-  const [server, setServer] = useState('all');
+  const debouncedValue = useDebounce(value, 200);
 
   const handleEnterKey = (target) => {
     if (target.charCode === 13) {
-      history.push(`searchresult/${server}/${name}`);
+      history.push(`searchresult/`);
     }
   };
 
@@ -41,9 +43,17 @@ const Home = () => {
     if (newValue.charAt(newValue.length - 1) === ' ') {
       return;
     } else {
-      setName(newValue);
+      setValue(newValue);
     }
   };
+
+  useEffect(() => {
+    dispatch({
+      type: 'home',
+      state: 'value',
+      value: value,
+    });
+  }, [debouncedValue]);
 
   return (
     <div className={css.container}>
@@ -55,7 +65,13 @@ const Home = () => {
           labelId='demo-simple-select-placeholder-label-label'
           id='demo-simple-select-placeholder-label'
           value={server}
-          onChange={(e) => setServer(e.target.value)}
+          onChange={(e) => {
+            dispatch({
+              type: 'home',
+              state: 'server',
+              value: e.target.value,
+            });
+          }}
           displayEmpty
           className={css.selectEmpty}
         >
@@ -71,7 +87,7 @@ const Home = () => {
       </FormControl>
       <Input
         className={css.search}
-        value={name}
+        value={value}
         onKeyPress={(e) => handleEnterKey(e)}
         onChange={(e) => handleName(e.target.value)}
       />
@@ -79,10 +95,11 @@ const Home = () => {
         className={css.search}
         variant='contained'
         color='primary'
-        href={`#/searchresult/${server}/${name}`}
+        href={`#/searchresult/${server}/${value}`}
       >
         검색하기
       </Button>
+      <pre>{JSON.stringify(store, null, 2)}</pre>
     </div>
   );
 };

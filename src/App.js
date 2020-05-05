@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useReducer } from 'react';
 import { Home, Search, Navigation, Auction, NotFound, Info } from 'components';
 import { HashRouter as Router, Route, Switch } from 'react-router-dom';
 import { makeStyles } from '@material-ui/core/styles';
+import { reducer, initialState, Context } from 'lib';
 
 const useStyles = makeStyles({
   app: {
@@ -15,23 +16,26 @@ const useStyles = makeStyles({
 });
 
 const App = () => {
+  const [store, dispatch] = useReducer(reducer, initialState);
   const css = useStyles();
   return (
-    <div className={css.app}>
-      <div style={{ backgroundColor: 'white' }}>
-        {window.innerWidth} x {window.innerHeight}
+    <Context.Provider value={{ store, dispatch }}>
+      <div className={css.app}>
+        <div style={{ backgroundColor: 'white' }}>
+          {window.innerWidth} x {window.innerHeight}
+        </div>
+        <Navigation />
+        <Router>
+          <Switch>
+            <Route exact path='/' component={Home} />
+            <Route path='/searchresult/:server/:id' component={Search} />
+            <Route path='/auction' component={Auction} />
+            <Route path='/info/:server/:id' component={Info} />
+            <Route component={NotFound} />
+          </Switch>
+        </Router>
       </div>
-      <Navigation />
-      <Router>
-        <Switch>
-          <Route exact path='/' component={Home} />
-          <Route path='/searchresult/:server/:name' component={Search} />
-          <Route path='/auction' component={Auction} />
-          <Route path='/info/:server/:id' component={Info} />
-          <Route component={NotFound} />
-        </Switch>
-      </Router>
-    </div>
+    </Context.Provider>
   );
 };
 export default App;
