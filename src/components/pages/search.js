@@ -5,7 +5,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Grid } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import { CharacterImage } from 'lib/util/key';
-import { useParams } from 'react-router-dom';
+import { useParams, useHistory } from 'react-router-dom';
 
 const useStyles = makeStyles({
   wrapper: {
@@ -13,16 +13,17 @@ const useStyles = makeStyles({
   },
   card: {
     marginTop: 50,
-    margin: 20,
-    width: 300,
+    margin: 75,
+    width: 240,
     textAlign: 'center',
     float: 'left',
     display: 'inline-block',
+    cursor: 'hand',
   },
   image: {
     display: 'inline-block',
-    marginLeft: -63,
-    marginTop: -70,
+    marginLeft: -93,
+    marginTop: -90,
   },
   bullet: {
     display: 'inline-block',
@@ -38,6 +39,9 @@ const useStyles = makeStyles({
   pageNationWrapper: {
     marginTop: 20,
   },
+  characterName: {
+    fontSize: 20,
+  },
 });
 
 const Search = () => {
@@ -45,7 +49,7 @@ const Search = () => {
   const { server, name } = useParams();
   const { isLoaded, data, page, pageSize } = store.search;
   const css = useStyles();
-
+  const history = useHistory();
   const pageNationChange = (event, value) => {
     dispatch({
       type: 'search',
@@ -54,8 +58,46 @@ const Search = () => {
     });
   };
 
+  window.onload = (e) => {
+    const fetch = async () => {
+      dispatch({
+        type: 'search',
+        state: 'isLoaded',
+        value: false,
+      });
+      dispatch({
+        type: 'home',
+        state: 'name',
+        value: name,
+      });
+      console.log('fetch started');
+      let url = key + `/search?server=${server}&name=${name}`;
+      let res = await axios.get(url);
+      console.log(res);
+      if (res.data.rows) {
+        dispatch({
+          type: 'search',
+          state: 'data',
+          value: res.data.rows,
+        });
+      } else {
+        dispatch({
+          type: 'search',
+          state: 'data',
+          value: [],
+        });
+      }
+      dispatch({
+        type: 'search',
+        state: 'isLoaded',
+        value: true,
+      });
+    };
+    fetch();
+  };
+
   const handleClick = (c) => {
-    let path = `#/info/${c.serverId}/${c.characterId}`;
+    let path = `/info/${c.serverId}/${c.characterId}`;
     const infoFetch = async () => {
       dispatch({
         type: 'info',
@@ -77,7 +119,7 @@ const Search = () => {
       });
     };
     infoFetch();
-    window.location.assign(path);
+    history.push(path);
   };
 
   return (
@@ -99,7 +141,9 @@ const Search = () => {
                 <CardContent className={css.image}>
                   {CharacterImage(c.serverId, c.characterId)}
                 </CardContent>
-                <CardContent>{c.characterName}</CardContent>
+                <CardContent className={css.characterName}>
+                  {c.characterName}
+                </CardContent>
                 <CardContent>{c.jobGrowName}</CardContent>
               </Card>
             );

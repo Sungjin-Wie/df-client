@@ -8,7 +8,7 @@ const Info = () => {
   const { info } = store;
   const { server, id } = useParams();
 
-  useEffect(() => {
+  window.onload = (e) => {
     const infoFetch = async () => {
       dispatch({
         type: 'info',
@@ -32,7 +32,7 @@ const Info = () => {
     if (!info.isLoaded) {
       infoFetch();
     }
-  }, [info]);
+  };
 
   return (
     <div style={{ margin: 'auto' }}>
