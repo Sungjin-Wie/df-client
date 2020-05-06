@@ -1,4 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+import axios from 'axios';
 import {
   Input,
   Button,
@@ -8,9 +10,8 @@ import {
   MenuItem,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import { serverList, Context, useDebounce, key } from 'lib';
-import { useHistory } from 'react-router-dom';
-import axios from 'axios';
+import { serverList, useDebounce, key } from 'lib';
+import { Context, HOME, SEARCH } from 'lib/reducer';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -36,9 +37,11 @@ const Home = () => {
   const debouncedValue = useDebounce(value, 200);
   useEffect(() => {
     dispatch({
-      type: 'home',
-      state: 'name',
-      value: debouncedValue,
+      type: HOME,
+      payload: {
+        name: 'name',
+        value: debouncedValue,
+      },
     });
   }, [debouncedValue]);
 
@@ -46,14 +49,18 @@ const Home = () => {
     if (target.charCode === 13) {
       const fetch = async () => {
         dispatch({
-          type: 'search',
-          state: 'isLoaded',
-          value: false,
+          type: SEARCH,
+          payload: {
+            name: 'isLoaded',
+            value: false,
+          },
         });
         dispatch({
-          type: 'home',
-          state: 'name',
-          value: value,
+          type: HOME,
+          payload: {
+            name: 'name',
+            value: value,
+          },
         });
         console.log('fetch started');
         let url = key + `/search?server=${server}&name=${value}`;
@@ -61,21 +68,27 @@ const Home = () => {
         console.log(res);
         if (res.data.rows) {
           dispatch({
-            type: 'search',
-            state: 'data',
-            value: res.data.rows,
+            type: SEARCH,
+            payload: {
+              name: 'data',
+              value: res.data.rows,
+            },
           });
         } else {
           dispatch({
-            type: 'search',
-            state: 'data',
-            value: [],
+            type: SEARCH,
+            payload: {
+              name: 'data',
+              value: [],
+            },
           });
         }
         dispatch({
-          type: 'search',
-          state: 'isLoaded',
-          value: true,
+          type: SEARCH,
+          payload: {
+            name: 'isLoaded',
+            value: true,
+          },
         });
       };
       fetch();
@@ -94,23 +107,29 @@ const Home = () => {
   const handleClick = (e) => {
     const fetch = async () => {
       dispatch({
-        type: 'search',
-        state: 'isLoaded',
-        value: false,
+        type: SEARCH,
+        payload: {
+          name: 'isLoaded',
+          value: false,
+        },
       });
       console.log('fetch started');
       let url = key + `/search?server=${server}&name=${name}`;
       let res = await axios.get(url);
       console.log(res.data.rows);
       dispatch({
-        type: 'search',
-        state: 'data',
-        value: res.data.rows,
+        type: SEARCH,
+        payload: {
+          name: 'data',
+          value: res.data.rows,
+        },
       });
       dispatch({
-        type: 'search',
-        state: 'isLoaded',
-        value: true,
+        type: SEARCH,
+        payload: {
+          name: 'isLoaded',
+          value: true,
+        },
       });
     };
     fetch();
@@ -129,9 +148,11 @@ const Home = () => {
           value={server}
           onChange={(e) => {
             dispatch({
-              type: 'home',
-              state: 'server',
-              value: e.target.value,
+              type: HOME,
+              payload: {
+                name: 'server',
+                value: e.target.value,
+              },
             });
           }}
           displayEmpty

@@ -18,24 +18,31 @@ export const initialState = {
   },
 };
 
+export const RESET = 'reset';
+export const HOME = 'home';
+export const SEARCH = 'search';
+export const INFO = 'info';
+
 export const reducer = (state, action) => {
   let newState;
-  switch (action.type) {
-    case 'reset':
+  const { type, payload } = action;
+  const { name, value } = payload;
+  switch (type) {
+    case RESET:
       return initialState;
-    case 'home':
-    case 'search':
+    case HOME:
+    case SEARCH:
       newState = {
         ...state,
-        [action.type]: { ...state[action.type], [action.state]: action.value },
+        [type]: { ...state[type], [name]: value },
       };
       return newState;
-    case 'info':
+    case INFO:
       return {
         ...state,
-        [action.type]: { ...state[action.type], ...action.value },
+        [type]: { ...state[type], ...value },
       };
     default:
-      return new Error(`Error: action [ ${action.type}${action.state} ]`);
+      return new Error(`Error: action [ ${type}${state} ]`);
   }
 };

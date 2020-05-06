@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { key, Context, ShowJSON } from 'lib';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
 import { Card, CardContent, Grid } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import { CharacterImage } from 'lib/util/key';
 import { useParams, useHistory } from 'react-router-dom';
+import { key, ShowJSON } from 'lib';
+import { Context, SEARCH, HOME, INFO } from 'lib/reducer';
 
 const useStyles = makeStyles({
   wrapper: {
@@ -52,23 +53,29 @@ const Search = () => {
   const history = useHistory();
   const pageNationChange = (event, value) => {
     dispatch({
-      type: 'search',
-      state: 'page',
-      value: value,
+      type: SEARCH,
+      payload: {
+        name: 'page',
+        value: value,
+      },
     });
   };
 
   window.onload = (e) => {
     const fetch = async () => {
       dispatch({
-        type: 'search',
-        state: 'isLoaded',
-        value: false,
+        type: SEARCH,
+        payload: {
+          name: 'isLoaded',
+          value: false,
+        },
       });
       dispatch({
-        type: 'home',
-        state: 'name',
-        value: name,
+        type: HOME,
+        payload: {
+          name: 'name',
+          value: name,
+        },
       });
       console.log('fetch started');
       let url = key + `/search?server=${server}&name=${name}`;
@@ -76,21 +83,27 @@ const Search = () => {
       console.log(res);
       if (res.data.rows) {
         dispatch({
-          type: 'search',
-          state: 'data',
-          value: res.data.rows,
+          type: SEARCH,
+          payload: {
+            name: 'data',
+            value: res.data.rows,
+          },
         });
       } else {
         dispatch({
-          type: 'search',
-          state: 'data',
-          value: [],
+          type: SEARCH,
+          payload: {
+            name: 'data',
+            value: [],
+          },
         });
       }
       dispatch({
-        type: 'search',
-        state: 'isLoaded',
-        value: true,
+        type: SEARCH,
+        payload: {
+          name: 'isLoaded',
+          value: true,
+        },
       });
     };
     fetch();
@@ -100,22 +113,28 @@ const Search = () => {
     let path = `/info/${c.serverId}/${c.characterId}`;
     const infoFetch = async () => {
       dispatch({
-        type: 'info',
-        state: 'isLoaded',
-        value: false,
+        type: INFO,
+        payload: {
+          name: 'isLoaded',
+          value: false,
+        },
       });
       let url = key + `/info?server=${c.serverId}&id=${c.characterId}`;
       let res = await axios.get(url);
       console.log(res);
       dispatch({
-        type: 'info',
-        state: 'data',
-        value: res.data,
+        type: INFO,
+        payload: {
+          name: 'data',
+          value: res.data,
+        },
       });
       dispatch({
-        type: 'info',
-        state: 'isLoaded',
-        value: true,
+        type: INFO,
+        payload: {
+          name: 'isLoaded',
+          value: true,
+        },
       });
     };
     infoFetch();

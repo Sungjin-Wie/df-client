@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { key, Context } from 'lib';
+import { key } from 'lib';
+import { Context, INFO } from 'lib/reducer';
 
 const Info = () => {
   const { store, dispatch } = useContext(Context);
@@ -9,15 +10,11 @@ const Info = () => {
   const { server, id } = useParams();
 
   window.onload = (e) => {
-    const infoFetch = async () => {
-      dispatch({
-        type: 'info',
-        state: 'isLoaded',
-        value: false,
-      });
-      let url = key + `/info?server=${server}&id=${id}`;
+    let url = key + `/info?server=${server}&id=${id}`;
+    const infoFetch = async (url) => {
       let res = await axios.get(url);
       console.log(res);
+      return res;
       dispatch({
         type: 'info',
         state: 'data',
@@ -30,13 +27,38 @@ const Info = () => {
       });
     };
     if (!info.isLoaded) {
-      infoFetch();
+      dispatch({
+        type: INFO,
+        payload: {
+          name: 'isLoaded',
+          value: false,
+        },
+      });
+      infoFetch(url)
+        .then((res) => {
+          dispatch({
+            type: INFO,
+            payload: {
+              name: 'data',
+              value: res.data,
+            },
+          });
+        })
+        .then(() =>
+          dispatch({
+            type: INFO,
+            payload: {
+              name: 'isLoaded',
+              value: true,
+            },
+          })
+        );
     }
   };
 
   return (
     <div style={{ margin: 'auto' }}>
-      <pre>{JSON.stringify(store, null, 2)}</pre>
+      <pre>{JSON.stringify(info, null, 2)}</pre>
     </div>
   );
 };
