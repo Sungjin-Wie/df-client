@@ -1,59 +1,44 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { key } from 'lib';
-import { Context, INFO } from 'lib/reducer';
+import { key, infoUrl } from 'lib';
+import {
+  Context,
+  INFO_FETCH_SUCCESS,
+  INFO_FETCH_START,
+  INFO_FETCH_FAILED,
+} from 'lib/reducer';
 
 const Info = () => {
   const { store, dispatch } = useContext(Context);
   const { info } = store;
   const { server, id } = useParams();
-
-  window.onload = (e) => {
-    let url = key + `/info?server=${server}&id=${id}`;
-    const infoFetch = async (url) => {
-      let res = await axios.get(url);
-      console.log(res);
-      return res;
-      dispatch({
-        type: 'info',
-        state: 'data',
-        value: res.data,
-      });
-      dispatch({
-        type: 'info',
-        state: 'isLoaded',
-        value: true,
-      });
-    };
-    if (!info.isLoaded) {
-      dispatch({
-        type: INFO,
+  const infoFetch = async (server, id) => {
+    await dispatch({
+      type: INFO_FETCH_START,
+    });
+    let res = await axios.get(infoUrl(server, id));
+    try {
+      await dispatch({
+        type: INFO_FETCH_SUCCESS,
         payload: {
-          name: 'isLoaded',
-          value: false,
+          name: 'data',
+          value: res.data,
         },
       });
-      infoFetch(url)
-        .then((res) => {
-          dispatch({
-            type: INFO,
-            payload: {
-              name: 'data',
-              value: res.data,
-            },
-          });
-        })
-        .then(() =>
-          dispatch({
-            type: INFO,
-            payload: {
-              name: 'isLoaded',
-              value: true,
-            },
-          })
-        );
+    } catch {
+      dispatch({
+        type: INFO_FETCH_FAILED,
+        payload: {
+          name: 'data',
+          value: [],
+        },
+      });
     }
+  };
+  window.onload = (e) => {
+    let url = key + `/info?server=${server}&id=${id}`;
+    infoFetch(server, id);
   };
 
   return (

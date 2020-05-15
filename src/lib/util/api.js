@@ -1,7 +1,17 @@
 import React from 'react';
-import { CardImage } from '@material-ui/core';
-const key = 'http://df-server.herokuapp.com/api';
-// const key = 'http://localhost:3000/api';
+export const key = 'http://df-server.herokuapp.com/api';
+const url = 'https://asia-northeast1-df-server.cloudfunctions.net/';
+export const searchUrl = (server, name) => {
+  return url + `search?server=${server}&name=${name}`;
+};
+
+export const infoUrl = (server, id) => {
+  return url + `info?server=${server}&id=${id}`;
+};
+
+export const auctionUrl = (name) => {
+  return url + `auction?name=${name}`;
+};
 
 export const CharacterImage = (server, character) => (
   <img

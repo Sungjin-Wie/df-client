@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Input, Button } from '@material-ui/core';
-import { key, Loading } from 'lib';
+import { key, Loading, auctionUrl } from 'lib';
 import axios from 'axios';
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -35,8 +35,7 @@ const Auction = () => {
   useEffect(() => {
     const fetch = async () => {
       toggleLoading(true);
-      let url = key + `/auction?name=${value}`;
-      let res = await axios.get(url);
+      let res = await axios.get(auctionUrl(value));
       setData(res.data.rows);
       if (res.data.rows.length !== 0) {
         toggleEmpty(false);
